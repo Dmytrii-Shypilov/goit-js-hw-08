@@ -1,41 +1,39 @@
 const throttle = require('lodash.throttle');
-
 const form = document.querySelector('.feedback-form');
-const emailInput = document.querySelector('[name="email"]');
-const messageInput = document.querySelector('[name="message"]')
 
+form.addEventListener('submit', onSubmitBtn);
+form.addEventListener('input', throttle(onInputEvent, 500))
 
-form.addEventListener('input', throttle((event) => {
-    let savedValues = {}
+toFillInput() 
 
-    event.target === emailInput ? savedValues.email = event.target.value : savedValues.email = emailInput.value;
-    event.target === messageInput ? savedValues.message = event.target.value : savedValues.message = messageInput.value;
-    localStorage.setItem("feedback-form-state", JSON.stringify(savedValues));   
+function onInputEvent (event) {
+    let inputData = {};
 
-}, 500))
+    formData = new FormData(form)
 
-const obtainedValues = localStorage.getItem("feedback-form-state");
-const parsedValues = JSON.parse(obtainedValues)
-
-function setSavedValues(valuesSet) {
-    if (valuesSet) {
-        valuesSet.email ? emailInput.value = valuesSet.email : emailInput.value = "";
-        valuesSet.message ? messageInput.value = valuesSet.message : messageInput.value = "";
-    }
-};
-
-setSavedValues(parsedValues)
-
-form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const submittedValues = {
-        email: emailInput.value,
-        message: messageInput.value,
-    }
-
-    console.log(submittedValues)
-
-    form.reset();
-    localStorage.clear()  
+    formData.forEach((value, key) => {
+    inputData[key] = value
 })
+    
+    localStorage.setItem('feedback-form-state', JSON.stringify(inputData))
+}
+
+
+function toFillInput () {
+    const savedData = localStorage.getItem("feedback-form-state")
+    const parsedData = JSON.parse(savedData)
+    
+    if(!parsedData) return;
+    Object.keys(parsedData).forEach(element => 
+    form[element].value = parsedData[element])
+    
+}
+
+function onSubmitBtn (event) {
+    event.preventDefault()
+    console.log(JSON.parse(localStorage.getItem('feedback-form-state')))
+
+    form.reset()
+    localStorage.clear()
+}
+
